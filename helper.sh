@@ -7,17 +7,17 @@ printUsage() {
 
 install() {
     local scriptName=$1
-    kpackagetool5 -i "$scriptName"
+    kpackagetool6 -i "$scriptName"
 }
 
 uninstall() {
     local scriptName=$1
-    kpackagetool5 -r "$scriptName"
+    kpackagetool6 -r "$scriptName"
 }
 
 upgrade() {
     local scriptName=$1
-    kpackagetool5 -u "$scriptName"
+    kpackagetool6 -u "$scriptName"
 }
 
 package() {
@@ -30,8 +30,8 @@ package() {
 
     cd "$scriptName" || exit 1
 
-    local scriptVersion=$(grep -Po "Version=\K(.*)" metadata.desktop)
-    zip -r "$scriptName-$scriptVersion.kwinscript" contents metadata.desktop
+    local scriptVersion=$(grep -Po "Version=\K(.*)" metadata.json)
+    zip -r "$scriptName-$scriptVersion.kwinscript" contents metadata.json
 
     cd ..
 }
