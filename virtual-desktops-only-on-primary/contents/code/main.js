@@ -12,7 +12,9 @@ function update(window) {
         return;
     }
 
-    var primaryScreen = workspace.screens[0];
+    // FIXME: in wayland seems no interface for primary screen...
+    // So hard coded here, sad.
+    var primaryScreen = workspace.screens[1];
     var currentScreen = window.output;
     var previousScreen = window.previousScreen;
     window.previousScreen = currentScreen;
