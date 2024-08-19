@@ -2,15 +2,18 @@ function bind(window) {
     window.previousScreen = window.screen;
     window.outputChanged.connect(window, update);
     window.desktopsChanged.connect(window, update);
-    print("Window " + window.caption + " has been bound");
+    // print("Window " + window.caption + " has been bound");
 }
 
 function update(window) {
     var window = window || this;
-    
-    if (window.desktopWindow || window.dock || (!window.normalWindow && window.skipTaskbar)) {
+
+    // only when screens and desktops are ready... TODO: configurable
+    if (workspace.screens.length < 2 || workspace.desktops.length < 9)
         return;
-    }
+    
+    if (window.specialWindow || (!window.normalWindow && window.skipTaskbar))
+        return;
 
     // FIXME: in wayland seems no interface for primary screen...
     // So hard coded here, sad.
@@ -20,9 +23,9 @@ function update(window) {
     window.previousScreen = currentScreen;
 
     if (currentScreen != primaryScreen) {
-        window.desktops = [];
+        window.onAllDesktops = true;
         print("Window " + window.caption + " has been pinned");
-    } else if (previousScreen != primaryScreen) {
+    } else if (window.onAllDesktops && previousScreen != primaryScreen) {
         window.desktops = [workspace.currentDesktop];
         print("Window " + window.caption + " has been unpinned");
     }
@@ -34,6 +37,7 @@ function bindUpdate(window) {
 }
 
 function main() {
+    // global object exposed via: KWin::Script::slotScriptLoadedFromFile
     workspace.windowList().forEach(bind);
     workspace.windowList().forEach(update);
     workspace.windowAdded.connect(bindUpdate);
