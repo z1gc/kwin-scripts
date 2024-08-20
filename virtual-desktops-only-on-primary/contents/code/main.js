@@ -15,6 +15,12 @@ function update(window) {
     if (window.specialWindow || (!window.normalWindow && window.skipTaskbar))
         return;
 
+    // TODO: what the window is?
+    if (window.caption.length == 0) {
+        print("Window " + window.pid + " ignored due to empty caption");
+        return;
+    }
+
     // FIXME: in wayland seems no interface for primary screen...
     // So hard coded here, sad.
     var primaryScreen = workspace.screens[1];
