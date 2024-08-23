@@ -1,42 +1,40 @@
-const screens_num = workspace.screens.length;
-const desktops_num = workspace.desktops.length;
+const screensNum = workspace.screens.length;
+const desktopsNum = workspace.desktops.length;
+const primaryScreen = workspace.activeScreen;
 
 function bind(window) {
     window.previousScreen = window.screen;
     window.outputChanged.connect(window, update);
-    window.desktopsChanged.connect(window, update);
+    // window.desktopsChanged.connect(window, update);
     // print("Window " + window.caption + " has been bound");
 }
 
 function update(window) {
     var window = window || this;
 
+    // TODO: what the window is with no caption?
+    if (window.specialWindow || window.caption.length == 0)
+        return;
+
     // only when screens and desktops are ready... TODO: configurable
-    if (workspace.screens.length != screens_num || workspace.desktops.length != desktops_num)
-        return;
-    
-    if (window.specialWindow || (!window.normalWindow && window.skipTaskbar))
+    if (workspace.screens.length != screensNum || workspace.desktops.length != desktopsNum)
         return;
 
-    // TODO: what the window is?
-    if (window.caption.length == 0) {
-        print("Window " + window.pid + " ignored due to empty caption");
-        return;
-    }
-
-    // FIXME: in wayland seems no interface for primary screen...
-    // So hard coded here, sad.
-    const primaryScreen = workspace.screens[1];
+    const onDesktops = window.onAllDesktops;
     const currentScreen = window.output;
     const previousScreen = window.previousScreen;
     window.previousScreen = currentScreen;
 
     if (currentScreen != primaryScreen) {
-        window.onAllDesktops = true;
-        print("Window " + window.caption + " has been pinned");
-    } else if (window.onAllDesktops && previousScreen != primaryScreen) {
-        window.desktops = [workspace.currentDesktop];
-        print("Window " + window.caption + " has been unpinned");
+        if (!onDesktops) {
+            window.onAllDesktops = true;
+            print("Window " + window.caption + " has been pinned");
+        }
+    } else if (previousScreen != primaryScreen) {
+        if (onDesktops) {
+            window.desktops = [workspace.currentDesktop];
+            print("Window " + window.caption + " has been unpinned");
+        }
     }
 }
 
@@ -46,7 +44,9 @@ function bindUpdate(window) {
 }
 
 function main() {
-    print(`total screens: ${screens_num}, desktops: ${desktops_num}`);
+    // https://github.com/wsdfhjxc/kwin-scripts/issues/9#issuecomment-1744811107
+    print(`total screens: ${screensNum}, desktops: ${desktopsNum}`);
+    print(`primary output: ${primaryScreen.name} ${primaryScreen.manufacturer} ${primaryScreen.model} ${primaryScreen.serialNumber}`);
 
     // global object exposed via: KWin::Script::slotScriptLoadedFromFile
     workspace.windowList().forEach(bind);
