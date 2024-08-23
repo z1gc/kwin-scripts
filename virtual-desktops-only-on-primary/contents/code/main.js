@@ -1,3 +1,6 @@
+const screens_num = workspace.screens.length;
+const desktops_num = workspace.desktops.length;
+
 function bind(window) {
     window.previousScreen = window.screen;
     window.outputChanged.connect(window, update);
@@ -9,7 +12,7 @@ function update(window) {
     var window = window || this;
 
     // only when screens and desktops are ready... TODO: configurable
-    if (workspace.screens.length < 2 || workspace.desktops.length < 9)
+    if (workspace.screens.length != screens_num || workspace.desktops.length != desktops_num)
         return;
     
     if (window.specialWindow || (!window.normalWindow && window.skipTaskbar))
@@ -23,9 +26,9 @@ function update(window) {
 
     // FIXME: in wayland seems no interface for primary screen...
     // So hard coded here, sad.
-    var primaryScreen = workspace.screens[1];
-    var currentScreen = window.output;
-    var previousScreen = window.previousScreen;
+    const primaryScreen = workspace.screens[1];
+    const currentScreen = window.output;
+    const previousScreen = window.previousScreen;
     window.previousScreen = currentScreen;
 
     if (currentScreen != primaryScreen) {
@@ -43,6 +46,8 @@ function bindUpdate(window) {
 }
 
 function main() {
+    print(`total screens: ${screens_num}, desktops: ${desktops_num}`);
+
     // global object exposed via: KWin::Script::slotScriptLoadedFromFile
     workspace.windowList().forEach(bind);
     workspace.windowList().forEach(update);
