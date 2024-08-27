@@ -7,17 +7,17 @@ printUsage() {
 
 install() {
     local scriptName=$1
-    kpackagetool6 -i "$scriptName"
+    kpackagetool6 -t "KWin/Script" -i "$scriptName"
 }
 
 uninstall() {
     local scriptName=$1
-    kpackagetool6 -r "$scriptName"
+    kpackagetool6 -t "KWin/Script" -r "$scriptName"
 }
 
 upgrade() {
     local scriptName=$1
-    kpackagetool6 -u "$scriptName"
+    kpackagetool6 -t "KWin/Script" -u "$scriptName"
 }
 
 package() {
