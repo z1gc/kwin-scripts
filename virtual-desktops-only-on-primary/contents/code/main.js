@@ -1,6 +1,8 @@
-const screensNum = workspace.screens.length;
-const desktopsNum = workspace.desktops.length;
 const primaryScreen = workspace.activeScreen.name;
+const blacklistCaptions = new Set([
+    // The startmenu will cause it:
+    "plasmashell",
+]);
 
 function bind(window) {
     window.previousScreen = window.screen;
@@ -10,14 +12,22 @@ function bind(window) {
 }
 
 function update(window) {
-    var window = window || this;
-
-    // TODO: what the window is with no caption?
-    if (window.specialWindow || window.caption.length == 0)
+    // only when screens is ready... TODO: configurable
+    if (workspace.screens.length < 2)
         return;
 
-    // only when screens and desktops are ready... TODO: configurable
-    if (workspace.screens.length != screensNum || workspace.desktops.length != desktopsNum)
+    // TODO: what the window is with no caption?
+    var window = window || this;
+    const caption = window.caption;
+    if (window.specialWindow || caption.length == 0 || blacklistCaptions.has(caption))
+        return;
+
+    // KDE: `Window::isShown`
+    if (window.deleted || window.hidden || window.minimized)
+        return;
+
+    // Might be slow?
+    if (!window.moveable && !window.resizeable)
         return;
 
     const onDesktops = window.onAllDesktops;
@@ -28,12 +38,12 @@ function update(window) {
     if (currentScreen !== primaryScreen) {
         if (!onDesktops) {
             window.onAllDesktops = true;
-            print("Window " + window.caption + " has been pinned");
+            print("Window " + caption + " has been pinned");
         }
     } else if (previousScreen !== primaryScreen) {
         if (onDesktops) {
             window.desktops = [workspace.currentDesktop];
-            print("Window " + window.caption + " has been unpinned");
+            print("Window " + caption + " has been unpinned");
         }
     }
 }
@@ -45,7 +55,7 @@ function bindUpdate(window) {
 
 function main() {
     // https://github.com/wsdfhjxc/kwin-scripts/issues/9#issuecomment-1744811107
-    print(`total screens: ${screensNum}, desktops: ${desktopsNum}, primary: ${primaryScreen}`);
+    print(`total screens: ${workspace.screens.length}, primary: ${primaryScreen}`);
 
     // global object exposed via: KWin::Script::slotScriptLoadedFromFile
     workspace.windowList().forEach(bind);
